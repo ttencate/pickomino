@@ -84,8 +84,8 @@ class Roll {
     int d[NUM_DIE_SIDES];
 
     int n;
-    int pNumerator;
-    int pDenominator;
+    long int pNumerator;
+    long int pDenominator;
 };
 
 ostream &operator<<(ostream &out, Roll const &roll) {
@@ -97,16 +97,16 @@ ostream &operator<<(ostream &out, Roll const &roll) {
   return out;
 }
 
-void enumerateRolls(int remainingDice, Roll partialRoll = Roll(), DieSide dieSide = 0) {
+void enumerateRolls(vector<Roll> &out, int remainingDice, Roll partialRoll = Roll(), DieSide dieSide = 0) {
   if (dieSide == NUM_DIE_SIDES - 1) {
     partialRoll.addDice(dieSide, remainingDice);
-    cout << partialRoll << " with probability " << partialRoll.probability() << '\n';
+    out.push_back(partialRoll);
     return;
   }
   for (int i = remainingDice; i >= 0; --i) {
     Roll roll = partialRoll;
     roll.addDice(dieSide, i);
-    enumerateRolls(remainingDice - i, roll, dieSide + 1);
+    enumerateRolls(out, remainingDice - i, roll, dieSide + 1);
   }
 }
 
@@ -131,11 +131,8 @@ int main() {
     }
   }
 
-  vector<int> diceTaken(NUM_DIE_SIDES);
-  cout << "For 1 die:\n";
-  enumerateRolls(1);
-  cout << "For 2 dice:\n";
-  enumerateRolls(2);
-  cout << "For 3 dice:\n";
-  enumerateRolls(3);
+  vector<vector<Roll>> possibleRolls(NUM_DICE + 1);
+  for (int i = 0; i <= NUM_DICE; ++i) {
+    enumerateRolls(possibleRolls[i], i);
+  }
 }
