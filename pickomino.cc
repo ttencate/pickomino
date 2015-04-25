@@ -48,7 +48,9 @@ int nChooseK(int n, int k) {
 class Roll {
   public:
     Roll() :
-      p(1.0)
+      n(0),
+      pNumerator(1),
+      pDenominator(1)
     {
       for (int i = 0; i < NUM_DIE_SIDES; ++i) {
         d[i] = 0;
@@ -59,36 +61,31 @@ class Roll {
       return d[(int) s];
     }
 
-    int &operator[](DieSide s) {
-      return d[(int) s];
-    }
-
-    double probability() const {
+    // Assumes that (*this)[s] == 0.
+    void addDice(DieSide s, int num) {
       // Multinomial gives number of ways to roll this:
       //   (n choose k1,...,k6) = n! / (k1!...k6)
       // Divide by 6^n to find the probability of this particular roll:
       //   n! / (k1!...k6!6^n)
-      int numDice = 0;
-      int numerator = 1;
-      int denominator = 1;
-      for (int i = 0; i < NUM_DIE_SIDES; ++i) {
-        for (int j = (*this)[i]; j > 0; --j) {
-          ++numDice;
-          numerator *= numDice;
-          denominator *= NUM_DIE_SIDES;
-        }
+      d[(int) s] = num;
+      for (int i = 1; i <= num; ++i) {
+        ++n;
+        pNumerator *= n;
+        pDenominator *= NUM_DIE_SIDES;
+        pDenominator *= i;
       }
-      for (int i = 0; i < NUM_DIE_SIDES; ++i) {
-        for (int j = (*this)[i]; j > 0; --j) {
-          denominator *= j;
-        }
-      }
-      return (double) numerator / denominator;
+    }
+
+    double probability() const {
+      return (double) pNumerator / pDenominator;
     }
 
   private:
     int d[NUM_DIE_SIDES];
-    double p;
+
+    int n;
+    int pNumerator;
+    int pDenominator;
 };
 
 ostream &operator<<(ostream &out, Roll const &roll) {
@@ -102,13 +99,13 @@ ostream &operator<<(ostream &out, Roll const &roll) {
 
 void enumerateRolls(int remainingDice, Roll partialRoll = Roll(), DieSide dieSide = 0) {
   if (dieSide == NUM_DIE_SIDES - 1) {
-    partialRoll[NUM_DIE_SIDES - 1] = remainingDice;
+    partialRoll.addDice(dieSide, remainingDice);
     cout << partialRoll << " with probability " << partialRoll.probability() << '\n';
     return;
   }
   for (int i = remainingDice; i >= 0; --i) {
     Roll roll = partialRoll;
-    roll[dieSide] = i;
+    roll.addDice(dieSide, i);
     enumerateRolls(remainingDice - i, roll, dieSide + 1);
   }
 }
