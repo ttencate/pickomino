@@ -1,5 +1,6 @@
 #include "dice.h"
 #include "maths.h"
+#include "roll.h"
 
 #include <algorithm>
 #include <array>
@@ -9,60 +10,8 @@
 #include <vector>
 
 using namespace std;
-#undef max
 
-const int NUM_DICE = 8;
-const int MAX_DIE_VALUE = 5;
-
-typedef double Probability;
 typedef double ExpectedWorms;
-
-Probability rollProbability(Dice const &dice) {
-  int n = dice.count();
-  long int numerator = factorial(n);
-  long int denominator = power(DieSide::COUNT, n);
-  for (DieSide const *side : DieSide::ALL) {
-    denominator *= factorial(dice[side]);
-  }
-  return (Probability) numerator / denominator;
-}
-
-class Roll {
-  public:
-    Roll(Dice const &dice) :
-      m_dice(dice),
-      m_probability(rollProbability(dice))
-    {
-    }
-
-    Dice const &dice() const {
-      return m_dice;
-    }
-
-    Probability probability() const {
-      return m_probability;
-    }
-
-  private:
-    Dice const m_dice;
-    Probability const m_probability;
-};
-
-void enumerateRolls(vector<vector<Roll>> &out, int remainingDice, Dice dice = Dice(), vector<DieSide const *>::const_iterator side = DieSide::ALL.begin()) {
-  if (side == DieSide::ALL.end()) {
-    unsigned n = dice.count();
-    if (out.size() <= n) {
-      out.resize(n + 1);
-    }
-    out[n].push_back(Roll(dice));
-    return;
-  }
-  for (int num = remainingDice; num >= 0; --num) {
-    Dice newRoll = dice;
-    newRoll[*side] = num;
-    enumerateRolls(out, remainingDice, newRoll, side + 1);
-  }
-}
 
 class GameState {
   public:
@@ -94,9 +43,6 @@ class GameState {
     int wormsToLose;
 };
 
-// TODO make not global
-vector<vector<Roll>> rolls(NUM_DICE + 1);
-
 ExpectedWorms expectedWormsWhenTaking(GameState const &state, Dice taken, Dice const &roll, DieSide const *side);
 
 ExpectedWorms expectedWormsWhenRolled(GameState const &state, Dice taken, Dice const &roll) {
@@ -114,8 +60,7 @@ ExpectedWorms expectedWormsWhenRolling(GameState const &state, Dice taken) {
   assert(remainingDice > 0);
 
   ExpectedWorms w = 0;
-  for (unsigned i = 0; i < rolls[remainingDice].size(); ++i) {
-    Roll roll = rolls[remainingDice][i];
+  for (Roll roll : Roll::allWithDice(remainingDice)) {
     w += roll.probability() * expectedWormsWhenRolled(state, taken, roll.dice());
   }
   return w;
@@ -170,8 +115,6 @@ int main() {
   }
 
   cout << '\n';
-
-  enumerateRolls(rolls, NUM_DICE);
 
   if (roll.count() > 0) {
     DieSide const *best = nullptr;
