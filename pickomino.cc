@@ -53,9 +53,9 @@ int nChooseK(int n, int k) {
 }
 
 
-class Roll {
+class Dice {
   public:
-    Roll() :
+    Dice() :
       d{0}
     {
     }
@@ -92,24 +92,24 @@ class Roll {
     int d[NUM_DIE_SIDES];
 };
 
-ostream &operator<<(ostream &out, Roll const &roll) {
+ostream &operator<<(ostream &out, Dice const &dice) {
   for (DieSide i = 0; i < NUM_DIE_SIDES; ++i) {
-    for (int j = 0; j < roll[i]; ++j) {
+    for (int j = 0; j < dice[i]; ++j) {
       out << stringForDie(i);
     }
   }
   return out;
 }
 
-istream &operator>>(istream &in, Roll &roll) {
+istream &operator>>(istream &in, Dice &dice) {
   string input;
   if (in >> input) {
     for (unsigned i = 0; i < input.size(); ++i) {
       char c = input[i];
       if (c >= '1' && c <= '5') {
-        roll[c - '1']++;
+        dice[c - '1']++;
       } else if (c == 'w' || c == 'W') {
-        roll[WORM]++;
+        dice[WORM]++;
       }
     }
   }
@@ -132,26 +132,26 @@ long int power(int n, int k) {
   return p;
 }
 
-Probability rollProbability(Roll const &roll) {
-  int n = roll.numDice();
+Probability rollProbability(Dice const &dice) {
+  int n = dice.numDice();
   long int numerator = factorial(n);
   long int denominator = power(NUM_DIE_SIDES, n);
   for (DieSide side = 0; side < NUM_DIE_SIDES; ++side) {
-    denominator *= factorial(roll[side]);
+    denominator *= factorial(dice[side]);
   }
   return (Probability) numerator / denominator;
 }
 
-class RollProb {
+class Roll {
   public:
-    RollProb(Roll const &roll) :
-      m_roll(roll),
-      m_probability(rollProbability(roll))
+    Roll(Dice const &dice) :
+      m_dice(dice),
+      m_probability(rollProbability(dice))
     {
     }
 
-    Roll const &roll() const {
-      return m_roll;
+    Dice const &dice() const {
+      return m_dice;
     }
 
     Probability probability() const {
@@ -159,19 +159,19 @@ class RollProb {
     }
 
   private:
-    Roll const m_roll;
+    Dice const m_dice;
     Probability const m_probability;
 };
 
-void enumerateRolls(vector<RollProb> &out, int numDice, Roll roll = Roll(), int usedDice = 0, DieSide dieSide = 0) {
+void enumerateRolls(vector<Roll> &out, int numDice, Dice dice = Dice(), int usedDice = 0, DieSide dieSide = 0) {
   int remainingDice = numDice - usedDice;
   if (dieSide == NUM_DIE_SIDES) {
-    out.push_back(RollProb(roll));
+    out.push_back(Roll(dice));
     return;
   }
   int minDiceToUse = dieSide == NUM_DIE_SIDES - 1 ? remainingDice : 0;
   for (int num = remainingDice; num >= minDiceToUse; --num) {
-    Roll newRoll = roll;
+    Dice newRoll = dice;
     newRoll[dieSide] = num;
     enumerateRolls(out, numDice, newRoll, usedDice + num, dieSide + 1);
   }
@@ -208,11 +208,11 @@ class GameState {
 };
 
 // TODO make not global
-vector<vector<RollProb>> rollProbs(NUM_DICE + 1);
+vector<vector<Roll>> rolls(NUM_DICE + 1);
 
-ExpectedWorms expectedWormsWhenTaking(GameState const &state, Roll taken, Roll const &roll, DieSide side);
+ExpectedWorms expectedWormsWhenTaking(GameState const &state, Dice taken, Dice const &roll, DieSide side);
 
-ExpectedWorms expectedWormsWhenRolled(GameState const &state, Roll taken, Roll const &roll) {
+ExpectedWorms expectedWormsWhenRolled(GameState const &state, Dice taken, Dice const &roll) {
   ExpectedWorms w = state.wormsForDeath();
   for (DieSide side = 0; side < NUM_DIE_SIDES; ++side) {
     if (roll.contains(side) && !taken.contains(side)) {
@@ -222,23 +222,23 @@ ExpectedWorms expectedWormsWhenRolled(GameState const &state, Roll taken, Roll c
   return w;
 }
 
-ExpectedWorms expectedWormsWhenRolling(GameState const &state, Roll taken) {
+ExpectedWorms expectedWormsWhenRolling(GameState const &state, Dice taken) {
   int remainingDice = NUM_DICE - taken.numDice();
   assert(remainingDice > 0);
 
   ExpectedWorms w = 0;
-  for (unsigned i = 0; i < rollProbs[remainingDice].size(); ++i) {
-    RollProb rollProb = rollProbs[remainingDice][i];
-    w += rollProb.probability() * expectedWormsWhenRolled(state, taken, rollProb.roll());
+  for (unsigned i = 0; i < rolls[remainingDice].size(); ++i) {
+    Roll roll = rolls[remainingDice][i];
+    w += roll.probability() * expectedWormsWhenRolled(state, taken, roll.dice());
   }
   return w;
 }
 
-ExpectedWorms expectedWormsWhenQuitting(GameState const &state, Roll taken) {
+ExpectedWorms expectedWormsWhenQuitting(GameState const &state, Dice taken) {
   return state.wormsForScore(taken.sum());
 }
 
-ExpectedWorms expectedWormsWhenTaking(GameState const &state, Roll taken, Roll const &roll, DieSide side) {
+ExpectedWorms expectedWormsWhenTaking(GameState const &state, Dice taken, Dice const &roll, DieSide side) {
   assert(roll.contains(side));
   assert(!taken.contains(side));
 
@@ -264,14 +264,14 @@ int main() {
 
   GameState state(wormsToLose);
 
-  Roll taken;
+  Dice taken;
   cout << "Taken: ";
   if (!(cin >> taken)) {
     cerr << "Must be a string of dice\n";
     return 1;
   }
 
-  Roll roll;
+  Dice roll;
   cout << "Roll: ";
   if (!(cin >> roll)) {
     cerr << "Must be a string of dice\n";
@@ -285,7 +285,7 @@ int main() {
   cout << '\n';
 
   for (int i = 0; i <= NUM_DICE; ++i) {
-    enumerateRolls(rollProbs[i], i);
+    enumerateRolls(rolls[i], i);
   }
 
   if (roll.numDice() > 0) {
@@ -321,8 +321,8 @@ int main() {
   //
   // for (unsigned j = 0; j <= 3; ++j) {
   //   cout << "With " << j << " dice:\n";
-  //   for (unsigned i = 0; i < rollProbs[j].size(); ++i) {
-  //     cout << rollProbs[j][i].roll() << ' ' << rollProbs[j][i].probability() << '\n';
+  //   for (unsigned i = 0; i < rolls[j].size(); ++i) {
+  //     cout << rolls[j][i].roll() << ' ' << rolls[j][i].probability() << '\n';
   //   }
   // }
 }
