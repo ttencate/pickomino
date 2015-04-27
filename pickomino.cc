@@ -1,4 +1,5 @@
 #include "dice.h"
+#include "game.h"
 #include "maths.h"
 #include "roll.h"
 
@@ -12,36 +13,6 @@
 using namespace std;
 
 typedef double ExpectedWorms;
-
-class GameState {
-  public:
-    GameState(int wormsToLose) :
-      wormsToLose(wormsToLose)
-    {
-    }
-
-    int wormsForScore(Score score) const {
-      // Pretending for now that all tiles are up for grabs on the table.
-      if (score < 21) {
-        return wormsForDeath();
-      } else if (score < 25) {
-        return 1;
-      } else if (score < 29) {
-        return 2;
-      } else if (score < 33) {
-        return 3;
-      } else {
-        return 4;
-      }
-    }
-
-    int wormsForDeath() const {
-      return -wormsToLose;
-    }
-
-  private:
-    int wormsToLose;
-};
 
 ExpectedWorms expectedWormsWhenTaking(GameState const &state, Dice taken, Dice const &roll, DieSide const *side);
 
