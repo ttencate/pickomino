@@ -116,29 +116,6 @@ istream &operator>>(istream &in, Roll &roll) {
   return in;
 }
 
-class RollProb {
-  public:
-    RollProb(Roll const &roll, long int numerator, long int denominator) :
-      m_roll(roll),
-      m_numerator(numerator),
-      m_denominator(denominator)
-    {
-    }
-
-    Roll const &roll() const {
-      return m_roll;
-    }
-
-    Probability probability() const {
-      return (Probability) m_numerator / m_denominator;
-    }
-
-  private:
-    Roll const m_roll;
-    long int const m_numerator;
-    long int const m_denominator; 
-};
-
 long int factorial(int n) {
   long int f = 1;
   for (; n; --n) {
@@ -155,22 +132,49 @@ long int power(int n, int k) {
   return p;
 }
 
-void enumerateRolls(vector<RollProb> &out, int numDice, Roll roll, int usedDice, long int numerator, long int denominator , DieSide dieSide) {
+Probability rollProbability(Roll const &roll) {
+  int n = roll.numDice();
+  long int numerator = factorial(n);
+  long int denominator = power(NUM_DIE_SIDES, n);
+  for (DieSide side = 0; side < NUM_DIE_SIDES; ++side) {
+    denominator *= factorial(roll[side]);
+  }
+  return (Probability) numerator / denominator;
+}
+
+class RollProb {
+  public:
+    RollProb(Roll const &roll) :
+      m_roll(roll),
+      m_probability(rollProbability(roll))
+    {
+    }
+
+    Roll const &roll() const {
+      return m_roll;
+    }
+
+    Probability probability() const {
+      return m_probability;
+    }
+
+  private:
+    Roll const m_roll;
+    Probability const m_probability;
+};
+
+void enumerateRolls(vector<RollProb> &out, int numDice, Roll roll = Roll(), int usedDice = 0, DieSide dieSide = 0) {
   int remainingDice = numDice - usedDice;
   if (dieSide == NUM_DIE_SIDES) {
-    out.push_back(RollProb(roll, numerator, denominator));
+    out.push_back(RollProb(roll));
     return;
   }
   int minDiceToUse = dieSide == NUM_DIE_SIDES - 1 ? remainingDice : 0;
   for (int num = remainingDice; num >= minDiceToUse; --num) {
     Roll newRoll = roll;
     newRoll[dieSide] = num;
-    enumerateRolls(out, numDice, newRoll, usedDice + num, numerator, denominator * factorial(num), dieSide + 1);
+    enumerateRolls(out, numDice, newRoll, usedDice + num, dieSide + 1);
   }
-}
-
-void enumerateRolls(vector<RollProb> &out, int numDice) {
-  enumerateRolls(out, numDice, Roll(), 0, factorial(numDice), power(NUM_DIE_SIDES, numDice), 0);
 }
 
 class GameState {
