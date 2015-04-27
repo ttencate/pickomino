@@ -1,3 +1,5 @@
+#include "dice.h"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -11,38 +13,8 @@ using namespace std;
 const int NUM_DICE = 8;
 const int MAX_DIE_VALUE = 5;
 
-typedef char DieSide;
-const DieSide ONE = 0;
-const DieSide TWO = 1;
-const DieSide THREE = 2;
-const DieSide FOUR = 3;
-const DieSide FIVE = 4;
-const DieSide WORM = 5;
-const DieSide NUM_DIE_SIDES = 6;
-
-typedef int Score;
 typedef double Probability;
 typedef double ExpectedWorms;
-
-int scoreForDie(DieSide v) {
-  if (v == WORM) {
-    return 5;
-  } else {
-    return v + 1;
-  }
-}
-
-char const *stringForDie(DieSide v) {
-  switch (v) {
-    case ONE: return "1";
-    case TWO: return "2";
-    case THREE: return "3";
-    case FOUR: return "4";
-    case FIVE: return "5";
-    case WORM: return "w";
-    default: return "ERROR";
-  }
-}
 
 int nChooseK(int n, int k) {
   int out = 1;
@@ -50,70 +22,6 @@ int nChooseK(int n, int k) {
     out *= (n + 1 - i) / i;
   }
   return out;
-}
-
-
-class Dice {
-  public:
-    Dice() :
-      d{0}
-    {
-    }
-
-    int operator[](DieSide s) const {
-      return d[(int) s];
-    }
-
-    int &operator[](DieSide s) {
-      return d[(int) s];
-    }
-
-    bool contains(DieSide s) const {
-      return d[(int) s] > 0;
-    }
-
-    int numDice() const {
-      int n = 0;
-      for (DieSide i = 0; i < NUM_DIE_SIDES; ++i) {
-        n += d[(int) i];
-      }
-      return n;
-    }
-
-    Score sum() const {
-      int s = 0;
-      for (DieSide i = 0; i < NUM_DIE_SIDES; ++i) {
-        s += d[(int) i] * scoreForDie(i);
-      }
-      return s;
-    }
-
-  private:
-    int d[NUM_DIE_SIDES];
-};
-
-ostream &operator<<(ostream &out, Dice const &dice) {
-  for (DieSide i = 0; i < NUM_DIE_SIDES; ++i) {
-    for (int j = 0; j < dice[i]; ++j) {
-      out << stringForDie(i);
-    }
-  }
-  return out;
-}
-
-istream &operator>>(istream &in, Dice &dice) {
-  string input;
-  if (in >> input) {
-    for (unsigned i = 0; i < input.size(); ++i) {
-      char c = input[i];
-      if (c >= '1' && c <= '5') {
-        dice[c - '1']++;
-      } else if (c == 'w' || c == 'W') {
-        dice[WORM]++;
-      }
-    }
-  }
-  return in;
 }
 
 long int factorial(int n) {
