@@ -21,37 +21,33 @@ int main() {
   }
 
   Game game(wormsToLose);
-
-  Dice taken;
-  cout << "Taken: ";
-  if (!(cin >> taken)) {
-    cerr << "Must be a string of dice\n";
-    return 1;
-  }
-
-  Dice roll;
-  cout << "Roll: ";
-  if (!(cin >> roll)) {
-    cerr << "Must be a string of dice\n";
-    return 1;
-  }
-  if (roll.count() > 0 && roll.count() + taken.count() != NUM_DICE) {
-    cerr << "Must be " << NUM_DICE << " dice in total\n";
-    return 1;
-  }
-
-  cout << '\n';
-
   Bot bot(&game);
-  bot.prepareTurn();
+  Dice taken;
 
-  DieSide const *side = bot.chooseSideToTake(taken, roll);
-  cout << "Take " << side->toString() << '\n';
+  while (game.canRoll(taken)) {
+    bot.prepareTurn();
+    cout << '\n';
 
-  taken[side] = roll[side];
-  if (bot.chooseWhetherToRoll(taken)) {
-    cout << "Roll again\n";
-  } else {
-    cout << "Quit\n";
+    if (!bot.chooseWhetherToRoll(taken)) {
+      cout << "Quit\n";
+      break;
+    }
+
+    Dice roll;
+    while (true) {
+      cout << "Roll: ";
+      cin >> roll;
+      if (roll.count() == NUM_DICE - taken.count()) {
+        break;
+      }
+      cerr << "Must be " << NUM_DICE - taken.count() << " dice\n";
+      return 1;
+    }
+
+    // TODO this crashes when none can be taken
+
+    DieSide const *side = bot.chooseSideToTake(taken, roll);
+    cout << "Take " << side->toString() << '\n';
+    taken[side] = roll[side];
   }
 }
