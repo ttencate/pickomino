@@ -26,6 +26,9 @@ ostream &operator<<(ostream &out, Dice const &dice) {
 
 istream &operator>>(istream &in, Dice &dice) {
   string input;
+  for (DieSide const *side : DieSide::ALL) {
+    dice[side] = 0;
+  }
   if (in >> input) {
     for (unsigned i = 0; i < input.size(); ++i) {
       char c = input[i];

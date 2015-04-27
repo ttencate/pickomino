@@ -31,13 +31,14 @@ int main() {
   Bot bot(&game);
   Dice taken;
 
+  bot.prepareTurn();
+
   while (true) {
     if (!game.canRoll(taken)) {
       cout << "Out of dice\n";
       break;
     }
 
-    bot.prepareTurn();
     cout << '\n';
 
     if (!bot.chooseWhetherToRoll(taken)) {
@@ -53,7 +54,6 @@ int main() {
         break;
       }
       cerr << "Must be " << NUM_DICE - taken.count() << " dice\n";
-      return 1;
     }
 
     if (!game.canTakeAny(taken, roll)) {

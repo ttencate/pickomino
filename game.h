@@ -34,10 +34,6 @@ class Game {
       return -m_wormsToLose;
     }
 
-    bool canQuit(Dice taken) {
-      return taken.contains(DieSide::WORM);
-    }
-
     bool canRoll(Dice taken) {
       return taken.count() < NUM_DICE;
     }
