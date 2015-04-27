@@ -18,10 +18,10 @@ typedef double Probability;
 typedef double ExpectedWorms;
 
 Probability rollProbability(Dice const &dice) {
-  int n = dice.numDice();
+  int n = dice.count();
   long int numerator = factorial(n);
-  long int denominator = power(NUM_DIE_SIDES, n);
-  for (DieSide side = 0; side < NUM_DIE_SIDES; ++side) {
+  long int denominator = power(DieSide::COUNT, n);
+  for (DieSide const *side : DieSide::ALL) {
     denominator *= factorial(dice[side]);
   }
   return (Probability) numerator / denominator;
@@ -48,17 +48,19 @@ class Roll {
     Probability const m_probability;
 };
 
-void enumerateRolls(vector<Roll> &out, int numDice, Dice dice = Dice(), int usedDice = 0, DieSide dieSide = 0) {
-  int remainingDice = numDice - usedDice;
-  if (dieSide == NUM_DIE_SIDES) {
-    out.push_back(Roll(dice));
+void enumerateRolls(vector<vector<Roll>> &out, int remainingDice, Dice dice = Dice(), vector<DieSide const *>::const_iterator side = DieSide::ALL.begin()) {
+  if (side == DieSide::ALL.end()) {
+    unsigned n = dice.count();
+    if (out.size() <= n) {
+      out.resize(n + 1);
+    }
+    out[n].push_back(Roll(dice));
     return;
   }
-  int minDiceToUse = dieSide == NUM_DIE_SIDES - 1 ? remainingDice : 0;
-  for (int num = remainingDice; num >= minDiceToUse; --num) {
+  for (int num = remainingDice; num >= 0; --num) {
     Dice newRoll = dice;
-    newRoll[dieSide] = num;
-    enumerateRolls(out, numDice, newRoll, usedDice + num, dieSide + 1);
+    newRoll[*side] = num;
+    enumerateRolls(out, remainingDice, newRoll, side + 1);
   }
 }
 
@@ -95,11 +97,11 @@ class GameState {
 // TODO make not global
 vector<vector<Roll>> rolls(NUM_DICE + 1);
 
-ExpectedWorms expectedWormsWhenTaking(GameState const &state, Dice taken, Dice const &roll, DieSide side);
+ExpectedWorms expectedWormsWhenTaking(GameState const &state, Dice taken, Dice const &roll, DieSide const *side);
 
 ExpectedWorms expectedWormsWhenRolled(GameState const &state, Dice taken, Dice const &roll) {
   ExpectedWorms w = state.wormsForDeath();
-  for (DieSide side = 0; side < NUM_DIE_SIDES; ++side) {
+  for (DieSide const *side : DieSide::ALL) {
     if (roll.contains(side) && !taken.contains(side)) {
       w = max(w, expectedWormsWhenTaking(state, taken, roll, side));
     }
@@ -108,7 +110,7 @@ ExpectedWorms expectedWormsWhenRolled(GameState const &state, Dice taken, Dice c
 }
 
 ExpectedWorms expectedWormsWhenRolling(GameState const &state, Dice taken) {
-  int remainingDice = NUM_DICE - taken.numDice();
+  int remainingDice = NUM_DICE - taken.count();
   assert(remainingDice > 0);
 
   ExpectedWorms w = 0;
@@ -123,17 +125,17 @@ ExpectedWorms expectedWormsWhenQuitting(GameState const &state, Dice taken) {
   return state.wormsForScore(taken.sum());
 }
 
-ExpectedWorms expectedWormsWhenTaking(GameState const &state, Dice taken, Dice const &roll, DieSide side) {
+ExpectedWorms expectedWormsWhenTaking(GameState const &state, Dice taken, Dice const &roll, DieSide const *side) {
   assert(roll.contains(side));
   assert(!taken.contains(side));
 
   taken[side] = roll[side];
 
   ExpectedWorms w = state.wormsForDeath();
-  if (taken.contains(WORM)) {
+  if (taken.contains(DieSide::WORM)) {
     w = max(w, expectedWormsWhenQuitting(state, taken));
   }
-  if (taken.numDice() < NUM_DICE) {
+  if (taken.count() < NUM_DICE) {
     w = max(w, expectedWormsWhenRolling(state, taken));
   }
   return w;
@@ -162,34 +164,32 @@ int main() {
     cerr << "Must be a string of dice\n";
     return 1;
   }
-  if (roll.numDice() > 0 && roll.numDice() + taken.numDice() != NUM_DICE) {
+  if (roll.count() > 0 && roll.count() + taken.count() != NUM_DICE) {
     cerr << "Must be " << NUM_DICE << " dice in total\n";
     return 1;
   }
 
   cout << '\n';
 
-  for (int i = 0; i <= NUM_DICE; ++i) {
-    enumerateRolls(rolls[i], i);
-  }
+  enumerateRolls(rolls, NUM_DICE);
 
-  if (roll.numDice() > 0) {
-    DieSide best = -1;
+  if (roll.count() > 0) {
+    DieSide const *best = nullptr;
     ExpectedWorms wBest = -100;
-    for (DieSide i = 0; i < NUM_DIE_SIDES; ++i) {
-      if (roll.contains(i) && !taken.contains(i)) {
-        ExpectedWorms w = expectedWormsWhenTaking(state, taken, roll, i);
+    for (DieSide const *side : DieSide::ALL) {
+      if (roll.contains(side) && !taken.contains(side)) {
+        ExpectedWorms w = expectedWormsWhenTaking(state, taken, roll, side);
         if (w > wBest) {
           wBest = w;
-          best = i;
+          best = side;
         }
-        cout << "When taking " << stringForDie(i) << ", expect " << w << " worms\n";
+        cout << "When taking " << side->toString() << ", expect " << w << " worms\n";
       }
     }
-    if (best < 0) {
+    if (!best) {
       cout << "You're already dead\n";
     } else {
-      cout << "Take " << stringForDie(best) << ", then ";
+      cout << "Take " << best->toString() << ", then ";
       taken[best] = roll[best];
 
       ExpectedWorms whenRolling = expectedWormsWhenRolling(state, taken);

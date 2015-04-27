@@ -1,4 +1,4 @@
-pickomino: *.cc
+pickomino: *.cc *.h
 	g++ -o pickomino --std=c++11 -O3 -Wall -Wextra -Werror *.cc
 
 test: pickomino
