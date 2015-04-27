@@ -7,13 +7,16 @@ extern const int NUM_DICE;
 
 class Game {
   public:
-    Game(int wormsToLose) :
-      wormsToLose(wormsToLose)
+    Game(int wormsToLose, int lowestTile) :
+      m_wormsToLose(wormsToLose),
+      m_lowestTile(lowestTile)
     {
     }
 
     int wormsForScore(Score score) const {
-      // Pretending for now that all tiles are up for grabs on the table.
+      if (score < m_lowestTile) {
+        return wormsForDeath();
+      }
       if (score < 21) {
         return wormsForDeath();
       } else if (score < 25) {
@@ -28,7 +31,7 @@ class Game {
     }
 
     int wormsForDeath() const {
-      return -wormsToLose;
+      return -m_wormsToLose;
     }
 
     bool canQuit(Dice taken) {
@@ -39,8 +42,18 @@ class Game {
       return taken.count() < NUM_DICE;
     }
 
+    bool canTakeAny(Dice taken, Dice roll) {
+      for (DieSide const *side : DieSide::ALL) {
+        if (roll.contains(side) && !taken.contains(side)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
   private:
-    int wormsToLose;
+    int m_wormsToLose;
+    int m_lowestTile;
 };
 
 #endif

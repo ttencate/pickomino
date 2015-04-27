@@ -20,11 +20,23 @@ int main() {
     return 1;
   }
 
-  Game game(wormsToLose);
+  int lowestTile;
+  cout << "Lowest tile to be claimed: ";
+  if (!(cin >> lowestTile)) {
+    cerr << "Must be a number\n";
+    return 1;
+  }
+
+  Game game(wormsToLose, lowestTile);
   Bot bot(&game);
   Dice taken;
 
-  while (game.canRoll(taken)) {
+  while (true) {
+    if (!game.canRoll(taken)) {
+      cout << "Out of dice\n";
+      break;
+    }
+
     bot.prepareTurn();
     cout << '\n';
 
@@ -44,7 +56,10 @@ int main() {
       return 1;
     }
 
-    // TODO this crashes when none can be taken
+    if (!game.canTakeAny(taken, roll)) {
+      cout << "Died\n";
+      return 0;
+    }
 
     DieSide const *side = bot.chooseSideToTake(taken, roll);
     cout << "Take " << side->toString() << '\n';
