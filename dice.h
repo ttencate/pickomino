@@ -68,13 +68,13 @@ class Dice {
     }
 
     bool contains(DieSide const *side) const {
-      return d[side->index()] > 0;
+      return (*this)[side] > 0;
     }
 
     int count() const {
       int n = 0;
       for (DieSide const *side : DieSide::ALL) {
-        n += d[side->index()];
+        n += (*this)[side];
       }
       return n;
     }
@@ -82,9 +82,22 @@ class Dice {
     Score sum() const {
       int s = 0;
       for (DieSide const *side : DieSide::ALL) {
-        s += d[side->index()] * side->score();
+        s += (*this)[side] * side->score();
       }
       return s;
+    }
+
+    bool operator==(Dice const &other) const {
+      for (DieSide const *side : DieSide::ALL) {
+        if ((*this)[side] != other[side]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    bool operator!=(Dice const &other) const {
+      return !(*this == other);
     }
 
   private:
@@ -93,5 +106,20 @@ class Dice {
 
 std::ostream &operator<<(std::ostream &out, Dice const &dice);
 std::istream &operator>>(std::istream &in, Dice &dice);
+
+namespace std {
+  template<>
+  struct hash<Dice> {
+    size_t operator()(Dice const &dice) const {
+      size_t out = 0;
+      int i = 0;
+      for (DieSide const *side : DieSide::ALL) {
+        out ^= hash<int>()(dice[side] << (4*i));
+        i++;
+      }
+      return out;
+    }
+  };
+}
 
 #endif

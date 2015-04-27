@@ -9,9 +9,9 @@
 using namespace std;
 
 int main() {
-  for (Roll roll : Roll::allWithDice(2)) {
-    cout << roll.dice() << ' ' << roll.probability() << '\n';
-  }
+  // for (Roll roll : Roll::allWithDice(2)) {
+  //   cout << roll.dice() << ' ' << roll.probability() << '\n';
+  // }
 
   int wormsToLose;
   cout << "Number of worms on top of stack: ";
@@ -43,6 +43,8 @@ int main() {
   cout << '\n';
 
   Bot bot(&game);
+  bot.prepareTurn();
+
   DieSide const *side = bot.chooseSideToTake(taken, roll);
   cout << "Take " << side->toString() << '\n';
 

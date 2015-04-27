@@ -7,6 +7,10 @@
 
 using namespace std;
 
+void Bot::prepareTurn() {
+  m_expectedWhenRolling.clear();
+}
+
 bool Bot::chooseWhetherToRoll(Dice const &taken) {
   if (!m_game->canRoll(taken)) {
     cout << "Out of dice\n";
@@ -51,14 +55,18 @@ ExpectedWorms Bot::expectedWormsWhenRolled(Dice taken, Dice const &roll) {
 }
 
 ExpectedWorms Bot::expectedWormsWhenRolling(Dice taken) {
-  int remainingDice = NUM_DICE - taken.count();
-  assert(remainingDice > 0);
+  if (m_expectedWhenRolling.find(taken) == m_expectedWhenRolling.end()) {
+    int remainingDice = NUM_DICE - taken.count();
+    assert(remainingDice > 0);
 
-  ExpectedWorms w = 0;
-  for (Roll roll : Roll::allWithDice(remainingDice)) {
-    w += roll.probability() * expectedWormsWhenRolled(taken, roll.dice());
+    ExpectedWorms w = 0;
+    for (Roll roll : Roll::allWithDice(remainingDice)) {
+      w += roll.probability() * expectedWormsWhenRolled(taken, roll.dice());
+    }
+
+    m_expectedWhenRolling[taken] = w;
   }
-  return w;
+  return m_expectedWhenRolling[taken];
 }
 
 ExpectedWorms Bot::expectedWormsWhenQuitting(Dice taken) {

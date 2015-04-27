@@ -1,6 +1,8 @@
 #ifndef BOT_H
 #define BOT_H
 
+#include <unordered_map>
+
 #include "dice.h"
 #include "game.h"
 
@@ -10,6 +12,7 @@ class Strategy {
   public:
     Strategy() {}
 
+    virtual void prepareTurn() = 0;
     virtual bool chooseWhetherToRoll(Dice const &taken) = 0;
     virtual DieSide const *chooseSideToTake(Dice const &taken, Dice const &roll) = 0;
 
@@ -24,11 +27,14 @@ class Bot : public Strategy {
       m_game(game)
     {}
 
-    bool chooseWhetherToRoll(Dice const &taken);
-    DieSide const *chooseSideToTake(Dice const &taken, Dice const &roll);
+    virtual void prepareTurn();
+    virtual bool chooseWhetherToRoll(Dice const &taken);
+    virtual DieSide const *chooseSideToTake(Dice const &taken, Dice const &roll);
 
   private:
     Game *const m_game;
+
+    std::unordered_map<Dice, ExpectedWorms> m_expectedWhenRolling;
 
     ExpectedWorms expectedWormsWhenTaking(Dice taken, Dice const &roll, DieSide const *side);
     ExpectedWorms expectedWormsWhenRolled(Dice taken, Dice const &roll);
