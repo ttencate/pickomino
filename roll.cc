@@ -3,8 +3,6 @@
 
 using namespace std;
 
-const int NUM_DICE = 8;
-
 Probability rollProbability(Dice const &dice) {
   int n = dice.count();
   long int numerator = factorial(n);
@@ -21,26 +19,27 @@ Roll::Roll(Dice const &dice) :
 {
 }
 
-void enumerateRolls(vector<vector<Roll>> &out, int remainingDice, Dice dice, vector<DieSide const *>::const_iterator side) {
-  if (side == DieSide::ALL.end()) {
-    unsigned n = dice.count();
-    if (out.size() <= n) {
-      out.resize(n + 1);
-    }
-    out[n].push_back(Roll(dice));
+void enumerateRolls(vector<Roll> &out, int remainingDice, Dice dice, vector<DieSide const *>::const_iterator side) {
+  if (side == DieSide::ALL.end() - 1) {
+    dice[*side] = remainingDice;
+    out.push_back(Roll(dice));
     return;
   }
   for (int num = remainingDice; num >= 0; --num) {
     Dice newRoll = dice;
     newRoll[*side] = num;
-    enumerateRolls(out, remainingDice, newRoll, side + 1);
+    enumerateRolls(out, remainingDice - num, newRoll, side + 1);
   }
 }
 
-vector<vector<Roll>> enumerateRolls(unsigned numDice) {
-  vector<vector<Roll>> rolls;
-  enumerateRolls(rolls, numDice, Dice(), DieSide::ALL.begin());
-  return rolls;
+vector<Roll> const &Roll::allWithDice(unsigned numDice) {
+  static vector<vector<Roll>*> cache;
+  if (cache.size() <= numDice) {
+    cache.resize(numDice + 1);
+  }
+  if (!cache[numDice]) {
+    cache[numDice] = new vector<Roll>();
+    enumerateRolls(*cache[numDice], numDice, Dice(), DieSide::ALL.begin());
+  }
+  return *cache[numDice];
 }
-
-std::vector<std::vector<Roll>> const Roll::s_all = enumerateRolls(NUM_DICE);

@@ -3,9 +3,11 @@
 
 #include "dice.h"
 
-class GameState {
+extern const int NUM_DICE;
+
+class Game {
   public:
-    GameState(int wormsToLose) :
+    Game(int wormsToLose) :
       wormsToLose(wormsToLose)
     {
     }
@@ -27,6 +29,14 @@ class GameState {
 
     int wormsForDeath() const {
       return -wormsToLose;
+    }
+
+    bool canQuit(Dice taken) {
+      return taken.contains(DieSide::WORM);
+    }
+
+    bool canRoll(Dice taken) {
+      return taken.count() < NUM_DICE;
     }
 
   private:
