@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
@@ -24,7 +25,7 @@ bool Bot::chooseWhetherToRoll(Game const &game, Dice const &taken) {
 
 DieSide const *Bot::chooseSideToTake(Game const &game, Dice const &taken, Dice const &roll) {
   DieSide const *best = nullptr;
-  ExpectedWorms bestW = -100;
+  ExpectedWorms bestW = -numeric_limits<ExpectedWorms>::max();
   for (DieSide const *side : DieSide::ALL) {
     if (roll.contains(side) && !taken.contains(side)) {
       ExpectedWorms w = expectedWormsWhenTaking(game, taken, roll, side);
