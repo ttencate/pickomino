@@ -1,5 +1,5 @@
-#ifndef BOT_H
-#define BOT_H
+#ifndef OPTIMAL_BOT_H
+#define OPTIMAL_BOT_H
 
 #include <unordered_map>
 
@@ -8,9 +8,9 @@
 
 typedef double ExpectedWorms;
 
-class Bot : public Strategy {
+class OptimalBot : public Strategy {
   public:
-    Bot(std::string name) :
+    OptimalBot(std::string name) :
       Strategy(name)
     {}
 

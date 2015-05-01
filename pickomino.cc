@@ -1,6 +1,7 @@
-#include "bot.h"
+#include "optimal_bot.h"
 #include "game.h"
 #include "roll.h"
+#include "simple_bot.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -18,8 +19,8 @@ int main(int argc, char const *const *argv) {
   }
 
   vector<shared_ptr<Strategy>> strategies;
-  strategies.push_back(shared_ptr<Strategy>(new Bot("Alice")));
-  strategies.push_back(shared_ptr<Strategy>(new Bot("Bob")));
+  strategies.push_back(shared_ptr<Strategy>(new OptimalBot("Alice")));
+  strategies.push_back(shared_ptr<Strategy>(new SimpleBot("Bob")));
   Game game(strategies);
   game.playToEnd();
 }

@@ -10,6 +10,11 @@ typedef int Score;
 class DieSide {
   public:
     static std::vector<DieSide const *> const ALL;
+    static DieSide const *const ONE;
+    static DieSide const *const TWO;
+    static DieSide const *const THREE;
+    static DieSide const *const FOUR;
+    static DieSide const *const FIVE;
     static DieSide const *const WORM;
     static unsigned const COUNT = 6;
 

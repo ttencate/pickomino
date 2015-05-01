@@ -9,6 +9,11 @@ DieSide const DieSide::S_FOUR(3, 4, "4", '4');
 DieSide const DieSide::S_FIVE(4, 5, "5", '5');
 DieSide const DieSide::S_WORM(5, 5, "w", 'w');
 
+DieSide const *const DieSide::ONE = &DieSide::S_ONE;
+DieSide const *const DieSide::TWO = &DieSide::S_TWO;
+DieSide const *const DieSide::THREE = &DieSide::S_THREE;
+DieSide const *const DieSide::FOUR = &DieSide::S_FOUR;
+DieSide const *const DieSide::FIVE = &DieSide::S_FIVE;
 DieSide const *const DieSide::WORM = &DieSide::S_WORM;
 
 vector<DieSide const *> const DieSide::ALL = {

@@ -29,6 +29,8 @@ set<Tile> const Tile::ALL = {
   Tile(36, 4),
 };
 
+Tile const Tile::INVALID = Tile(-1, -1);
+
 // Higher tiles are sorted first.
 bool operator<(Tile const &a, Tile const &b) {
   if (a.worms() < b.worms()) return false;
@@ -48,6 +50,24 @@ std::ostream &operator<<(std::ostream &out, Tile const &tile) {
     out << 'W';
   }
   return out;
+}
+
+Tile Game::stealableTile(Strategy const *thief, Score score) const {
+  for (Player const &player : m_players) {
+    if (!player.hasStrategy(thief) && player.hasTiles() && player.topTile().score() == score) {
+      return player.topTile();
+    }
+  }
+  return Tile::INVALID;
+}
+
+Tile Game::bestRemainingTile(Score score) const {
+  for (Tile tile : m_tiles) {
+    if (score >= tile.score()) {
+      return tile;
+    }
+  }
+  return Tile::INVALID;
 }
 
 void Game::playOneTurn() {
@@ -126,7 +146,7 @@ void Game::takeOrLoseTile(Score score) {
     }
   }
 
-  Tile returned;
+  Tile returned = Tile::INVALID;
   if (currentPlayer().hasTiles()) {
     returned = currentPlayer().popTile();
     m_tiles.insert(returned);  

@@ -40,16 +40,7 @@ typedef int Worms;
 class Tile {
   public:
     static std::set<Tile> const ALL;
-
-    Tile() :
-      m_score(0),
-      m_worms(0)
-    {}
-
-    Tile(Score score, Worms worms) :
-      m_score(score),
-      m_worms(worms)
-    {}
+    static Tile const INVALID;
 
     Score score() const {
       return m_score;
@@ -59,9 +50,18 @@ class Tile {
       return m_worms;
     }
 
+    bool valid() const {
+      return m_worms >= 0;
+    }
+
   private:
     Score m_score;
     Worms m_worms;
+
+    Tile(Score score, Worms worms) :
+      m_score(score),
+      m_worms(worms)
+    {}
 };
 
 // Higher tiles are sorted first.
@@ -158,6 +158,9 @@ class Game {
     std::set<Tile> const &remainingTiles() const {
       return m_tiles;
     }
+
+    Tile stealableTile(Strategy const *thief, Score score) const;
+    Tile bestRemainingTile(Score score) const;
 
     void playOneTurn();
     void playToEnd();
