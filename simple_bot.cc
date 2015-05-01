@@ -19,10 +19,20 @@ bool SimpleBot::chooseWhetherToRoll(Game const &game, Dice const &taken) {
 }
 
 DieSide const *SimpleBot::chooseSideToTake(Game const &, Dice const &taken, Dice const &roll) {
+  Score maxScore = 0;
+  DieSide const *maxSide = nullptr;
   for (DieSide const *side : {DieSide::WORM, DieSide::FIVE, DieSide::FOUR, DieSide::THREE, DieSide::TWO, DieSide::ONE}) {
     if (roll.contains(side) && !taken.contains(side)) {
-      return side;
+      if (side == DieSide::WORM && taken.count() > 0) {
+        return side;
+      }
+      Score score = side->score() * roll[side];
+      if (score > maxScore) {
+        maxScore = score;
+        maxSide = side;
+      }
     }
   }
-  assert(false);
+  assert(maxSide);
+  return maxSide;
 }

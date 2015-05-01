@@ -105,6 +105,20 @@ bool Game::isOver() const {
   return remainingTiles().empty();
 }
 
+int Game::winner() const {
+  Worms maxWorms = -1;
+  int winner = -1;
+  for (unsigned i = 0; i < m_players.size(); ++i) {
+    if (m_players[i].worms() > maxWorms) {
+      maxWorms = m_players[i].worms();
+      winner = i;
+    } else if (m_players[i].worms() == maxWorms) {
+      return -1; // Tie.
+    }
+  }
+  return winner;
+}
+
 Score Game::takeTurn(Strategy &strategy) const {
   strategy.prepareTurn(*this);
   Dice taken;

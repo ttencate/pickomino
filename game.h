@@ -124,8 +124,8 @@ class Player {
 
 class Game {
   public:
-    Game(std::vector<std::shared_ptr<Strategy>> strategies) :
-      m_currentPlayer(0),
+    Game(std::vector<std::shared_ptr<Strategy>> strategies, int startPlayer) :
+      m_currentPlayer(startPlayer),
       m_tiles(Tile::ALL)
     {
       assert(!strategies.empty());
@@ -165,6 +165,7 @@ class Game {
     void playOneTurn();
     void playToEnd();
     bool isOver() const;
+    int winner() const;
 
   private:
     std::vector<Player> m_players;

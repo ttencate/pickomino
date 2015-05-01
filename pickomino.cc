@@ -14,13 +14,38 @@ int main(int argc, char const *const *argv) {
   //   cout << roll.dice() << ' ' << roll.probability() << '\n';
   // }
 
+  int games = 1;
   if (argc > 1) {
-    seedRandom(atoi(argv[1]));
+    games = atoi(argv[1]);
+  }
+  if (argc > 2) {
+    seedRandom(atoi(argv[2]));
   }
 
-  vector<shared_ptr<Strategy>> strategies;
-  strategies.push_back(shared_ptr<Strategy>(new OptimalBot("Alice")));
-  strategies.push_back(shared_ptr<Strategy>(new SimpleBot("Bob")));
-  Game game(strategies);
-  game.playToEnd();
+  int optimalWins = 0;
+  int simpleWins = 0;
+  int ties = 0;
+  while (games--) {
+    vector<shared_ptr<Strategy>> strategies;
+    strategies.push_back(shared_ptr<Strategy>(new OptimalBot("Alice")));
+    strategies.push_back(shared_ptr<Strategy>(new SimpleBot("Bob")));
+    Game game(strategies, games % 2);
+    game.playToEnd();
+    switch (game.winner()) {
+      case 0:
+        optimalWins++;
+        break;
+      case 1:
+        simpleWins++;
+        break;
+      default:
+        ties++;
+        break;
+    }
+  }
+  cout << "Alice wins " << optimalWins << " times\n";
+  cout << "Bob wins " << simpleWins << " times\n";
+  if (ties) {
+    cout << "There were " << ties << " ties\n";
+  }
 }
