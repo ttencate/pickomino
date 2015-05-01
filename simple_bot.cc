@@ -13,7 +13,9 @@ void SimpleBot::prepareTurn(Game const &) {
 
 bool SimpleBot::chooseWhetherToRoll(Game const &game, Dice const &taken) {
   Score score = taken.sum();
-  return game.bestRemainingTile(score).valid() || game.stealableTile(this, score).valid();
+  Tile stealable = game.stealableTile(this, score);
+  Tile remaining = game.bestRemainingTile(score);
+  return !stealable.valid() && !remaining.valid();
 }
 
 DieSide const *SimpleBot::chooseSideToTake(Game const &, Dice const &taken, Dice const &roll) {

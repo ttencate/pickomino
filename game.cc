@@ -72,8 +72,8 @@ Tile Game::bestRemainingTile(Score score) const {
 
 void Game::playOneTurn() {
   cout << "Remaining tiles:";
-  for (Tile tile : m_tiles) {
-    cout << ' ' << tile;
+  for (auto i = m_tiles.rbegin(); i != m_tiles.rend(); i++) {
+    cout << ' ' << *i;
   }
   cout << '\n';
   cout << '\n';
