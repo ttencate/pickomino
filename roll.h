@@ -24,6 +24,7 @@ class Roll {
     Probability const m_probability;
 };
 
+void seedRandom(int seed);
 Dice randomRoll(int n);
 
 #endif

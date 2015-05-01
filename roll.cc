@@ -46,9 +46,14 @@ vector<Roll> const &Roll::allWithDice(unsigned numDice) {
   return *cache[numDice];
 }
 
+static std::mt19937 rnd(4); // Chosen by fair dice roll. Guaranteed to be random.
+static std::uniform_int_distribution<int> distribution(0, DieSide::COUNT - 1);
+
+void seedRandom(int seed) {
+  rnd.seed(seed);
+}
+
 DieSide const *randomDieSide() {
-  static std::mt19937 rnd(4); // Chosen by fair dice roll. Guaranteed to be random.
-  static std::uniform_int_distribution<int> distribution(0, DieSide::COUNT - 1);
   return DieSide::ALL[distribution(rnd)];
 }
 
