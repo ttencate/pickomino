@@ -13,21 +13,7 @@ int main() {
   //   cout << roll.dice() << ' ' << roll.probability() << '\n';
   // }
 
-  int wormsToLose;
-  cout << "Number of worms on top of stack: ";
-  if (!(cin >> wormsToLose)) {
-    cerr << "Must be a number\n";
-    return 1;
-  }
-
-  int lowestTile;
-  cout << "Lowest tile to be claimed: ";
-  if (!(cin >> lowestTile)) {
-    cerr << "Must be a number\n";
-    return 1;
-  }
-
-  Game game(wormsToLose, lowestTile);
+  Game game;
   Bot bot(&game);
   Dice taken;
 
@@ -46,15 +32,8 @@ int main() {
       break;
     }
 
-    Dice roll;
-    while (true) {
-      cout << "Roll: ";
-      cin >> roll;
-      if (roll.count() == NUM_DICE - taken.count()) {
-        break;
-      }
-      cerr << "Must be " << NUM_DICE - taken.count() << " dice\n";
-    }
+    Dice roll = randomRoll(NUM_DICE - taken.count());
+    cout << "Rolled " << roll << '\n';
 
     if (!game.canTakeAny(taken, roll)) {
       cout << "Died\n";
@@ -62,7 +41,7 @@ int main() {
     }
 
     DieSide const *side = bot.chooseSideToTake(taken, roll);
-    cout << "Take " << side->toString() << '\n';
     taken[side] = roll[side];
+    cout << "Took " << side->toString() << ", now have " << taken << '\n';
   }
 }

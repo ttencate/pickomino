@@ -1,6 +1,8 @@
 #include "maths.h"
 #include "roll.h"
 
+#include <random>
+
 using namespace std;
 
 Probability rollProbability(Dice const &dice) {
@@ -42,4 +44,18 @@ vector<Roll> const &Roll::allWithDice(unsigned numDice) {
     enumerateRolls(*cache[numDice], numDice, Dice(), DieSide::ALL.begin());
   }
   return *cache[numDice];
+}
+
+DieSide const *randomDieSide() {
+  static std::mt19937 rnd(4); // Chosen by fair dice roll. Guaranteed to be random.
+  static std::uniform_int_distribution<int> distribution(0, DieSide::COUNT - 1);
+  return DieSide::ALL[distribution(rnd)];
+}
+
+Dice randomRoll(int n) {
+  Dice dice;
+  for (int i = 0; i < n; i++) {
+    dice[randomDieSide()]++;
+  }
+  return dice;
 }

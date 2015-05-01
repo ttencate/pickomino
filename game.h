@@ -7,9 +7,9 @@ extern const int NUM_DICE;
 
 class Game {
   public:
-    Game(int wormsToLose, int lowestTile) :
-      m_wormsToLose(wormsToLose),
-      m_lowestTile(lowestTile)
+    Game() :
+      m_wormsToLose(0),
+      m_lowestTile(21)
     {
     }
 
