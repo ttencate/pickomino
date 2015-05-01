@@ -84,6 +84,16 @@ class Dice {
       return n;
     }
 
+    int sideCount() const {
+      int n = 0;
+      for (DieSide const *side : DieSide::ALL) {
+        if ((*this)[side] > 0) {
+          n++;
+        }
+      }
+      return n;
+    }
+
     Score sum() const {
       int s = 0;
       for (DieSide const *side : DieSide::ALL) {

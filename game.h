@@ -159,8 +159,8 @@ class Game {
       return m_tiles;
     }
 
-    Tile stealableTile(Strategy const *thief, Score score) const;
-    Tile bestRemainingTile(Score score) const;
+    Tile stealableTile(Strategy const *thief, Dice const &dice) const;
+    Tile bestRemainingTile(Dice const &dice) const;
 
     void playOneTurn();
     void playToEnd();

@@ -43,6 +43,7 @@ int main(int argc, char const *const *argv) {
         break;
     }
   }
+  cout << '\n';
   cout << "Alice wins " << optimalWins << " times\n";
   cout << "Bob wins " << simpleWins << " times\n";
   if (ties) {

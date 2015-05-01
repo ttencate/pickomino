@@ -52,7 +52,11 @@ std::ostream &operator<<(std::ostream &out, Tile const &tile) {
   return out;
 }
 
-Tile Game::stealableTile(Strategy const *thief, Score score) const {
+Tile Game::stealableTile(Strategy const *thief, Dice const &dice) const {
+  if (!dice.contains(DieSide::WORM)) {
+    return Tile::INVALID;
+  }
+  Score score = dice.sum();
   for (Player const &player : m_players) {
     if (!player.hasStrategy(thief) && player.hasTiles() && player.topTile().score() == score) {
       return player.topTile();
@@ -61,7 +65,11 @@ Tile Game::stealableTile(Strategy const *thief, Score score) const {
   return Tile::INVALID;
 }
 
-Tile Game::bestRemainingTile(Score score) const {
+Tile Game::bestRemainingTile(Dice const &dice) const {
+  if (!dice.contains(DieSide::WORM)) {
+    return Tile::INVALID;
+  }
+  Score score = dice.sum();
   for (Tile tile : m_tiles) {
     if (score >= tile.score()) {
       return tile;

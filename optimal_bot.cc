@@ -70,12 +70,12 @@ ExpectedWorms OptimalBot::expectedWormsWhenQuitting(Game const &game, Dice taken
   if (m_expectedWhenQuitting.find(score) == m_expectedWhenQuitting.end()) {
     ExpectedWorms w = m_expectedWhenDead;
 
-    Tile stealable = game.stealableTile(this, score);
+    Tile stealable = game.stealableTile(this, taken);
     if (stealable.valid()) {
       w = max(w, stealable.worms() * (1 + 1.0 / (game.numPlayers() - 1)));
     }
 
-    Tile remaining = game.bestRemainingTile(score);
+    Tile remaining = game.bestRemainingTile(taken);
     if (remaining.valid()) {
       w = max(w, ExpectedWorms(remaining.worms()));
     }
