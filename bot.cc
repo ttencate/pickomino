@@ -7,30 +7,30 @@
 
 using namespace std;
 
-void Bot::prepareTurn() {
+void Bot::prepareTurn(Game const &game) {
   m_expectedWhenRolling.clear();
-  ExpectedWorms w = expectedWormsWhenRolling(Dice());
+  ExpectedWorms w = expectedWormsWhenRolling(game, Dice());
   cout << "This turn, expect " << w << " worms\n";
   if (w < 0) {
     cout << "I would rather not play...\n";
   }
 }
 
-bool Bot::chooseWhetherToRoll(Dice const &taken) {
-  assert(m_game->canRoll(taken));
-  ExpectedWorms whenRolling = expectedWormsWhenRolling(taken);
-  ExpectedWorms whenQuitting = expectedWormsWhenQuitting(taken);
+bool Bot::chooseWhetherToRoll(Game const &game, Dice const &taken) {
+  assert(game.canRoll(taken));
+  ExpectedWorms whenRolling = expectedWormsWhenRolling(game, taken);
+  ExpectedWorms whenQuitting = expectedWormsWhenQuitting(game, taken);
   cout << "When rolling, expect " << whenRolling << " worms\n";
   cout << "When quitting, expect " << whenQuitting << " worms\n";
   return whenRolling > whenQuitting;
 }
 
-DieSide const *Bot::chooseSideToTake(Dice const &taken, Dice const &roll) {
+DieSide const *Bot::chooseSideToTake(Game const &game, Dice const &taken, Dice const &roll) {
   DieSide const *best = nullptr;
   ExpectedWorms bestW = -100;
   for (DieSide const *side : DieSide::ALL) {
     if (roll.contains(side) && !taken.contains(side)) {
-      ExpectedWorms w = expectedWormsWhenTaking(taken, roll, side);
+      ExpectedWorms w = expectedWormsWhenTaking(game, taken, roll, side);
       if (w > bestW) {
         bestW = w;
         best = side;
@@ -42,29 +42,31 @@ DieSide const *Bot::chooseSideToTake(Dice const &taken, Dice const &roll) {
   if (bestW < 0) {
     cout << "I'm getting nervous...\n";
   } else if (bestW > 2) {
-    cout << "Way to go!\n";
+    cout << "Nice.\n";
+  } else if (bestW > 3) {
+    cout << "Woohoo!\n";
   }
   return best;
 }
 
-ExpectedWorms Bot::expectedWormsWhenRolled(Dice taken, Dice const &roll) {
-  ExpectedWorms w = m_game->wormsForDeath();
+ExpectedWorms Bot::expectedWormsWhenRolled(Game const &game, Dice taken, Dice const &roll) {
+  ExpectedWorms w = game.wormsForDeath();
   for (DieSide const *side : DieSide::ALL) {
     if (roll.contains(side) && !taken.contains(side)) {
-      w = max(w, expectedWormsWhenTaking(taken, roll, side));
+      w = max(w, expectedWormsWhenTaking(game, taken, roll, side));
     }
   }
   return w;
 }
 
-ExpectedWorms Bot::expectedWormsWhenRolling(Dice taken) {
+ExpectedWorms Bot::expectedWormsWhenRolling(Game const &game, Dice taken) {
   if (m_expectedWhenRolling.find(taken) == m_expectedWhenRolling.end()) {
     int remainingDice = NUM_DICE - taken.count();
     assert(remainingDice > 0);
 
     ExpectedWorms w = 0;
     for (Roll roll : Roll::allWithDice(remainingDice)) {
-      w += roll.probability() * expectedWormsWhenRolled(taken, roll.dice());
+      w += roll.probability() * expectedWormsWhenRolled(game, taken, roll.dice());
     }
 
     m_expectedWhenRolling[taken] = w;
@@ -72,19 +74,19 @@ ExpectedWorms Bot::expectedWormsWhenRolling(Dice taken) {
   return m_expectedWhenRolling[taken];
 }
 
-ExpectedWorms Bot::expectedWormsWhenQuitting(Dice taken) {
-  return m_game->wormsForScore(taken.sum());
+ExpectedWorms Bot::expectedWormsWhenQuitting(Game const &game, Dice taken) {
+  return game.wormsForScore(taken.sum());
 }
 
-ExpectedWorms Bot::expectedWormsWhenTaking(Dice taken, Dice const &roll, DieSide const *side) {
+ExpectedWorms Bot::expectedWormsWhenTaking(Game const &game, Dice taken, Dice const &roll, DieSide const *side) {
   assert(roll.contains(side));
   assert(!taken.contains(side));
 
   taken[side] = roll[side];
 
-  ExpectedWorms w = expectedWormsWhenQuitting(taken);
-  if (m_game->canRoll(taken)) {
-    w = max(w, expectedWormsWhenRolling(taken));
+  ExpectedWorms w = expectedWormsWhenQuitting(game, taken);
+  if (game.canRoll(taken)) {
+    w = max(w, expectedWormsWhenRolling(game, taken));
   }
   return w;
 }
