@@ -22,7 +22,7 @@ DieSide const *SimpleBot::chooseSideToTake(Game const &, Dice const &taken, Dice
   DieSide const *maxSide = nullptr;
   for (DieSide const *side : {DieSide::WORM, DieSide::FIVE, DieSide::FOUR, DieSide::THREE, DieSide::TWO, DieSide::ONE}) {
     if (roll.contains(side) && !taken.contains(side)) {
-      if (side == DieSide::WORM && taken.sideCount() >= 2) {
+      if (side == DieSide::WORM && taken.sideCount() >= 1) {
         return side;
       }
       Score score = side->score() * roll[side];
