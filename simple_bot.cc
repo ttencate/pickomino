@@ -12,9 +12,16 @@ void SimpleBot::prepareTurn(Game const &) {
 }
 
 bool SimpleBot::chooseWhetherToRoll(Game const &game, Dice const &taken) {
-  Tile stealable = game.stealableTile(this, taken);
-  Tile remaining = game.bestRemainingTile(taken);
-  return !stealable.valid() && !remaining.valid();
+  Tile take = game.stealableTile(this, taken);
+  if (!take.valid()) {
+    take = game.bestRemainingTile(taken);
+  }
+  if (!take.valid()) {
+    cout << "\"No tile to take yet.\"\n";
+    return true;
+  }
+  cout << "\"I can take a tile.\"\n";
+  return false;
 }
 
 DieSide const *SimpleBot::chooseSideToTake(Game const &, Dice const &taken, Dice const &roll) {
@@ -22,7 +29,7 @@ DieSide const *SimpleBot::chooseSideToTake(Game const &, Dice const &taken, Dice
   DieSide const *maxSide = nullptr;
   for (DieSide const *side : {DieSide::WORM, DieSide::FIVE, DieSide::FOUR, DieSide::THREE, DieSide::TWO, DieSide::ONE}) {
     if (roll.contains(side) && !taken.contains(side)) {
-      if (side == DieSide::WORM && taken.sideCount() >= 1) {
+      if (side == DieSide::WORM && taken.sideCount() >= 2) {
         return side;
       }
       Score score = side->score() * roll[side];
@@ -33,5 +40,6 @@ DieSide const *SimpleBot::chooseSideToTake(Game const &, Dice const &taken, Dice
     }
   }
   assert(maxSide);
+  cout << "\"Highest value side is " << maxSide->toString() << ".\"\n";
   return maxSide;
 }

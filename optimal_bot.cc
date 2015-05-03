@@ -65,19 +65,25 @@ ExpectedWorms OptimalBot::expectedWormsWhenRolling(Game const &game, Dice taken)
   return m_expectedWhenRolling[taken];
 }
 
-ExpectedWorms OptimalBot::expectedWormsWhenQuitting(Game const &game, Dice taken) {
+ExpectedWorms OptimalBot::expectedWormsWhenQuitting(Game const &game, Dice const &taken) {
+  if (!taken.contains(DieSide::WORM)) {
+    return m_expectedWhenDead;
+  }
+
   Score score = taken.sum();
   if (m_expectedWhenQuitting.find(score) == m_expectedWhenQuitting.end()) {
     ExpectedWorms w = m_expectedWhenDead;
 
-    Tile stealable = game.stealableTile(this, taken);
-    if (stealable.valid()) {
-      w = max(w, stealable.worms() * (1 + 1.0 / (game.numPlayers() - 1)));
-    }
+    if (taken.contains(DieSide::WORM)) {
+      Tile stealable = game.stealableTile(this, taken);
+      if (stealable.valid()) {
+        w = max(w, stealable.worms() * (1 + 1.0 / (game.numPlayers() - 1)));
+      }
 
-    Tile remaining = game.bestRemainingTile(taken);
-    if (remaining.valid()) {
-      w = max(w, ExpectedWorms(remaining.worms()));
+      Tile remaining = game.bestRemainingTile(taken);
+      if (remaining.valid()) {
+        w = max(w, ExpectedWorms(remaining.worms()));
+      }
     }
 
     m_expectedWhenQuitting[score] = w;

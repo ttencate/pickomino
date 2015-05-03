@@ -87,9 +87,9 @@ void Game::playOneTurn() {
   cout << '\n';
 
   cout << currentPlayer().name() << "'s turn\n";
-  Score score = takeTurn(currentPlayer().strategy());
-  cout << currentPlayer().name() << " scored " << score << '\n';
-  takeOrLoseTile(score);
+  Dice taken = takeTurn(currentPlayer().strategy());
+  cout << currentPlayer().name() << " scored " << taken.sum() << '\n';
+  takeOrLoseTile(taken);
 
   m_currentPlayer = (m_currentPlayer + 1) % m_players.size();
 }
@@ -127,7 +127,7 @@ int Game::winner() const {
   return winner;
 }
 
-Score Game::takeTurn(Strategy &strategy) const {
+Dice Game::takeTurn(Strategy &strategy) const {
   strategy.prepareTurn(*this);
   Dice taken;
   while (canRoll(taken) && strategy.chooseWhetherToRoll(*this, taken)) {
@@ -136,7 +136,7 @@ Score Game::takeTurn(Strategy &strategy) const {
 
     if (!canTakeAny(taken, roll)) {
       cout << currentPlayer().name() << " died\n";
-      return 0;
+      return Dice();
     }
 
     DieSide const *side = strategy.chooseSideToTake(*this, taken, roll);
@@ -144,27 +144,31 @@ Score Game::takeTurn(Strategy &strategy) const {
     cout << currentPlayer().name() << " took " << side->toString() << ", now has " << taken << '\n';
   }
   cout << "Quit\n";
-  return taken.sum();
+  return taken;
 }
 
-void Game::takeOrLoseTile(Score score) {
-  for (unsigned i = 0; i < m_players.size(); i++) {
-    Player &victim = m_players[i];
-    if (i != m_currentPlayer && victim.hasTiles() && victim.topTile().score() == score) {
-      Tile stolen = victim.popTile();
-      currentPlayer().takeTile(stolen);
-      cout << currentPlayer().name() << " stole " << stolen << " from " << victim.name() << '\n';
-      return;
-    }
-  }
+void Game::takeOrLoseTile(Dice taken) {
+  if (taken.contains(DieSide::WORM)) {
+    Score score = taken.sum();
 
-  for (auto i = m_tiles.begin(); i != m_tiles.end(); i++) {
-    if (score >= i->score()) {
-      Tile taken = *i;
-      currentPlayer().takeTile(taken);
-      m_tiles.erase(i);
-      cout << currentPlayer().name() << " took " << taken << " from the table\n";
-      return;
+    for (unsigned i = 0; i < m_players.size(); i++) {
+      Player &victim = m_players[i];
+      if (i != m_currentPlayer && victim.hasTiles() && victim.topTile().score() == score) {
+        Tile stolen = victim.popTile();
+        currentPlayer().takeTile(stolen);
+        cout << currentPlayer().name() << " stole " << stolen << " from " << victim.name() << '\n';
+        return;
+      }
+    }
+
+    for (auto i = m_tiles.begin(); i != m_tiles.end(); i++) {
+      if (score >= i->score()) {
+        Tile taken = *i;
+        currentPlayer().takeTile(taken);
+        m_tiles.erase(i);
+        cout << currentPlayer().name() << " took " << taken << " from the table\n";
+        return;
+      }
     }
   }
 

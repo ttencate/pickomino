@@ -26,7 +26,7 @@ class OptimalBot : public Strategy {
     ExpectedWorms expectedWormsWhenTaking(Game const &game, Dice taken, Dice const &roll, DieSide const *side);
     ExpectedWorms expectedWormsWhenRolled(Game const &game, Dice taken, Dice const &roll);
     ExpectedWorms expectedWormsWhenRolling(Game const &game, Dice taken);
-    ExpectedWorms expectedWormsWhenQuitting(Game const &game, Dice taken);
+    ExpectedWorms expectedWormsWhenQuitting(Game const &game, Dice const &taken);
 };
 
 #endif

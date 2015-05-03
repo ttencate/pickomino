@@ -1,5 +1,6 @@
 #include "optimal_bot.h"
 #include "game.h"
+#include "human.h"
 #include "roll.h"
 #include "simple_bot.h"
 
@@ -13,6 +14,10 @@ int main(int argc, char const *const *argv) {
   // for (Roll roll : Roll::allWithDice(2)) {
   //   cout << roll.dice() << ' ' << roll.probability() << '\n';
   // }
+  // for (int i = 1; i <= 8; i++) {
+  //   cout << i << ' ' << Roll::allWithDice(i).size() << '\n';
+  // }
+  // return 0;
 
   int games = 1;
   if (argc > 1) {

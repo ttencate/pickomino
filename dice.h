@@ -18,6 +18,15 @@ class DieSide {
     static DieSide const *const WORM;
     static unsigned const COUNT = 6;
 
+    static DieSide const *fromString(std::string s) {
+      for (DieSide const *side : ALL) {
+        if (s == side->m_string) {
+          return side;
+        }
+      }
+      return nullptr;
+    }
+
     unsigned index() const {
       return m_index;
     }

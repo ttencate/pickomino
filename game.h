@@ -172,8 +172,8 @@ class Game {
     unsigned m_currentPlayer;
     std::set<Tile> m_tiles;
 
-    Score takeTurn(Strategy &strategy) const;
-    void takeOrLoseTile(Score score);
+    Dice takeTurn(Strategy &strategy) const;
+    void takeOrLoseTile(Dice roll);
 
     bool canRoll(Dice taken) const {
       return taken.count() < NUM_DICE;
