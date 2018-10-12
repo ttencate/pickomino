@@ -23,8 +23,14 @@ int main(int argc, char const *const *argv) {
   if (argc > 1) {
     games = atoi(argv[1]);
   }
+
+  int n_players = 2;
   if (argc > 2) {
-    seedRandom(atoi(argv[2]));
+    n_players = atoi(argv[2]);
+  }
+
+  if (argc > 3) {
+    seedRandom(atoi(argv[3]));
   }
 
   int optimalWins = 0;
@@ -34,6 +40,11 @@ int main(int argc, char const *const *argv) {
     vector<shared_ptr<Strategy>> strategies;
     strategies.push_back(shared_ptr<Strategy>(new OptimalBot("Alice")));
     strategies.push_back(shared_ptr<Strategy>(new SimpleBot("Bob")));
+    if (n_players > 2) {
+	    for (int i=2; i< n_players; i++) {
+    		strategies.push_back(shared_ptr<Strategy>(new OptimalBot("Optimal." + std::to_string(i))));
+	    }
+    }
     Game game(strategies, games % 2);
     game.playToEnd();
     switch (game.winner()) {
@@ -43,14 +54,17 @@ int main(int argc, char const *const *argv) {
       case 1:
         simpleWins++;
         break;
-      default:
+      case -1:
         ties++;
+        break;
+      default:
+        optimalWins++;
         break;
     }
   }
   cout << '\n';
-  cout << "Alice wins " << optimalWins << " times\n";
-  cout << "Bob wins " << simpleWins << " times\n";
+  cout << "Optimal Strategy wins " << optimalWins << " times\n";
+  cout << "Simple strategy wins " << simpleWins << " times\n";
   if (ties) {
     cout << "There were " << ties << " ties\n";
   }
